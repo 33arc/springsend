@@ -1,4 +1,4 @@
-package com.github._arc.springsend.springsend;
+package com.github.arc33.springsend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
