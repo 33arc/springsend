@@ -1,10 +1,13 @@
 package com.github.arc33.springsend.service.auth;
 
 
+import com.github.arc33.springsend.config.SecurityConfig;
 import com.github.arc33.springsend.dto.user.UserLoginRequest;
 import com.github.arc33.springsend.dto.user.UserLoginResponse;
 import com.github.arc33.springsend.service.blacklist.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
@@ -16,6 +19,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class CognitoAuthenticationService implements AuthenticationService {
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityConfig.class);
     private final CognitoIdentityProviderClient cognitoClient;
     @Value("${aws.cognito.clientId}")
     private final String clientId;
@@ -32,7 +36,13 @@ public class CognitoAuthenticationService implements AuthenticationService {
                 .authParameters(authParams)
                 .build();
 
-        InitiateAuthResponse initiateAuthResult = cognitoClient.initiateAuth(initiateAuthRequest);
+        InitiateAuthResponse initiateAuthResult;
+        try {
+            initiateAuthResult = cognitoClient.initiateAuth(initiateAuthRequest);
+        }catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+            throw e;
+        }
         AuthenticationResultType authenticationResult = initiateAuthResult.authenticationResult();
 
         return new UserLoginResponse(
@@ -75,11 +85,17 @@ public class CognitoAuthenticationService implements AuthenticationService {
         );
     }*/
 
+    @Override
     public void logout(String accessToken){
         GlobalSignOutRequest globalSignOutRequest = GlobalSignOutRequest.builder()
                 .accessToken(accessToken)
                 .build();
-        cognitoClient.globalSignOut(globalSignOutRequest);
+        try {
+            cognitoClient.globalSignOut(globalSignOutRequest);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(),e);
+            throw e;
+        }
         tokenBlacklistService.addToBlacklist(accessToken);
     }
 
