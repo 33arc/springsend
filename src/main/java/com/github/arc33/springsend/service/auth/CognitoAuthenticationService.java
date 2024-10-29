@@ -2,6 +2,8 @@ package com.github.arc33.springsend.service.auth;
 
 
 import com.github.arc33.springsend.config.SecurityConfig;
+import com.github.arc33.springsend.dto.token.TokenRefreshRequest;
+import com.github.arc33.springsend.dto.token.TokenRefreshResponse;
 import com.github.arc33.springsend.dto.user.UserLoginRequest;
 import com.github.arc33.springsend.dto.user.UserLoginResponse;
 import com.github.arc33.springsend.service.blacklist.TokenBlacklistService;
@@ -62,11 +64,9 @@ public class CognitoAuthenticationService implements AuthenticationService {
         cognitoClient.confirmSignUp(confirmSignUpRequest);
     }
 
-    /*
-    // WIP
     public TokenRefreshResponse refreshToken(TokenRefreshRequest request) {
         Map<String, String> authParams = new HashMap<>();
-        authParams.put("REFRESH_TOKEN", request.token());
+        authParams.put("REFRESH_TOKEN", request.getToken());
 
         InitiateAuthRequest initiateAuthRequest = InitiateAuthRequest.builder()
                 .authFlow(AuthFlowType.REFRESH_TOKEN_AUTH)
@@ -83,7 +83,7 @@ public class CognitoAuthenticationService implements AuthenticationService {
                 authenticationResult.expiresIn(),
                 authenticationResult.refreshToken()
         );
-    }*/
+    }
 
     @Override
     public void logout(String accessToken){
