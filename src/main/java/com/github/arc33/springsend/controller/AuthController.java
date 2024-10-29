@@ -1,5 +1,8 @@
 package com.github.arc33.springsend.controller;
 
+import com.github.arc33.springsend.dto.user.UserLoginRequest;
+import com.github.arc33.springsend.dto.user.UserLoginResponse;
+import com.github.arc33.springsend.service.auth.AuthenticationService;
 import com.github.arc33.springsend.service.blacklist.TokenBlacklistService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -16,11 +19,20 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class AuthController {
     private final TokenBlacklistService tokenBlacklistService;
+    private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequest request){
-        // Something...
-        return null;
+        UserLoginResponse response = null;
+        try {
+            response = authenticationService.loginUser(request);
+        } catch(Exception e){
+            // TODO: implement ApiError
+//            throw ApiErrorType
+//                    .INVALID_CREDENTIALS
+//                    .toException();
+        }
+        return ResponseEntity.ok(response);
     }
 
 }
