@@ -29,39 +29,10 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {
         SpringsendApplication.class,
-        CognitoAuthenticationServiceIntegrationTest.TestConfig.class
+        BaseIntegrationTest.CommonTestConfig.class
 })
 @Testcontainers
-@TestPropertySource(properties = {
-        "aws.cognito.clientId=test-client-id",
-        "aws.cognito.userPoolId=test-pool-id",
-        "aws.region=us-east-1",
-        "aws.accessKeyId=test",
-        "aws.secretKey=test"
-})
-class CognitoAuthenticationServiceIntegrationTest {
-    @Container
-    static CockroachContainer db = new CockroachContainer(DockerImageName.parse("cockroachdb/cockroach:latest"))
-            .withCommand("start-single-node --insecure")
-            .withDatabaseName("defaultdb")
-            .withExposedPorts(26257);
-
-    @DynamicPropertySource
-    static void registerProperties(DynamicPropertyRegistry registry) {
-        System.out.println("CockroachDB container host: " + db.getHost());
-        System.out.println("CockroachDB mapped port: " + db.getMappedPort(26257));
-
-        registry.add("spring.datasource.url",()->db.getJdbcUrl()+"?sslmode=disable");
-        registry.add("spring.datasource.username", () -> db.getUsername());
-        registry.add("spring.datasource.password", () -> db.getPassword());
-        registry.add("spring.datasource.driver-class-name", () -> db.getDriverClassName());
-
-        // Debug logging
-        System.out.println("CockroachDB URL: " + db.getJdbcUrl());
-        System.out.println("CockroachDB Host: " + db.getHost());
-        System.out.println("CockroachDB Port: " + db.getMappedPort(26257));
-    }
-
+class CognitoAuthenticationServiceIntegrationTest extends BaseIntegrationTest {
     @MockBean(name = "cognitoClient")
     private CognitoIdentityProviderClient cognitoClient;
 
@@ -70,24 +41,6 @@ class CognitoAuthenticationServiceIntegrationTest {
 
     @MockBean
     private TokenBlacklistService tokenBlacklistService;
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public TokenBlacklistService tokenBlacklistService() {
-            return mock(TokenBlacklistService.class);
-        }
-
-        @Bean
-        public JwtTokenFilter jwtTokenFilter() {
-            return mock(JwtTokenFilter.class);
-        }
-
-        @Bean
-        public SecurityConfig securityConfig() {
-            return mock(SecurityConfig.class);
-        }
-    }
 
     @Test
     void fullAuthenticationFlow() {
