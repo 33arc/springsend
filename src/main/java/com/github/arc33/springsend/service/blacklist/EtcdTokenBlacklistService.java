@@ -2,6 +2,7 @@ package com.github.arc33.springsend.service.blacklist;
 
 import com.github.arc33.springsend.repository.blacklist.BlacklistRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EtcdTokenBlacklistService implements TokenBlacklistService {
     private final BlacklistRepository blacklistRepository;
-    private static final long TTL_SECONDS = 24 * 60 * 60; // 24 hours
+    @Value("${token.blacklist.ttl-seconds:86400}") // Default 24 hours
+    private long TTL_SECONDS;
 
     @Override
     public void addToBlacklist(String token) {
