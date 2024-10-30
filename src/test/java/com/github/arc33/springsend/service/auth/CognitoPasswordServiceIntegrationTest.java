@@ -3,14 +3,13 @@ package com.github.arc33.springsend.service.auth;
 import com.github.arc33.springsend.SpringsendApplication;
 import com.github.arc33.springsend.dto.password.ConfirmResetPasswordRequest;
 import com.github.arc33.springsend.dto.password.ResetPasswordRequest;
+import com.github.arc33.springsend.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.CodeMismatchException;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ConfirmForgotPasswordRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ForgotPasswordRequest;
 

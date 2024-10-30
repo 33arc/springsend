@@ -1,4 +1,4 @@
-package com.github.arc33.springsend.service.auth;
+package com.github.arc33.springsend;
 
 import com.github.arc33.springsend.config.SecurityConfig;
 import com.github.arc33.springsend.filter.JwtTokenFilter;
@@ -35,7 +35,7 @@ public abstract class BaseIntegrationTest {
     }
 
     @TestConfiguration
-    static class CommonTestConfig {
+    public static class CommonTestConfig {
         @Bean
         public TokenBlacklistService tokenBlacklistService() {
             return mock(TokenBlacklistService.class);

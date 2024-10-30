@@ -1,24 +1,15 @@
 package com.github.arc33.springsend.service.auth;
 
 import com.github.arc33.springsend.SpringsendApplication;
-import com.github.arc33.springsend.config.SecurityConfig;
 import com.github.arc33.springsend.dto.user.UserLoginRequest;
 import com.github.arc33.springsend.dto.user.UserLoginResponse;
-import com.github.arc33.springsend.filter.JwtTokenFilter;
+import com.github.arc33.springsend.BaseIntegrationTest;
 import com.github.arc33.springsend.service.blacklist.TokenBlacklistService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.containers.CockroachContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
