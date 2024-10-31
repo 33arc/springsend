@@ -1,9 +1,12 @@
 package com.github.arc33.springsend.service.user;
 
+import com.github.arc33.springsend.domain.event.RegistrationStatus;
+import com.github.arc33.springsend.domain.event.UserRegistrationEvent;
 import com.github.arc33.springsend.dto.user.UserRegisterRequest;
 import com.github.arc33.springsend.exception.custom.ApiErrorType;
 import com.github.arc33.springsend.model.CognitoUser;
 import com.github.arc33.springsend.model.User;
+import com.github.arc33.springsend.repository.UserRegistrationEventRepository;
 import com.google.protobuf.Api;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +30,7 @@ import org.springframework.validation.annotation.Validated;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +43,8 @@ public class CognitoUserManagementService implements UserManagementService {
     private final CognitoIdentityProviderClient cognitoClient;
 
     private final CacheManager cacheManager;
+
+    private final UserRegistrationEventRepository registrationEventRepository;
 
     @Value("${aws.cognito.userPoolId}")
     private final String userPoolId;
@@ -70,18 +79,95 @@ public class CognitoUserManagementService implements UserManagementService {
     public void registerUser(@Valid UserRegisterRequest request) {
         log.info("Starting user registration for username: {}", request.getUsername());
 
+        // Create registration event
+        UserRegistrationEvent event = UserRegistrationEvent.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .role(request.getRole())
+                .status(RegistrationStatus.PENDING)
+                .timestamp(Instant.now())
+                .build();
+
+        registrationEventRepository.save(event);
+
         try {
+            // Step 1: Sign up user in Cognito
             String userSub = signUpUserInCognito(request);
+            event.setUserSub(userSub);
+            event.setStatus(RegistrationStatus.USER_CREATED);
+            registrationEventRepository.save(event);
+
+            // Step 2: Add user to group
             addUserToGroup(userSub, request.getUsername(), request.getRole());
+            event.setStatus(RegistrationStatus.COMPLETED);
+            registrationEventRepository.save(event);
+
             log.info("Successfully registered user: {}", request.getUsername());
+
         } catch (UsernameExistsException e) {
+            event.setStatus(RegistrationStatus.FAILED);
+            event.setErrorMessage("User already exists");
+            registrationEventRepository.save(event);
+
             log.error("Username already exists: {}", request.getUsername());
             throw ApiErrorType.RESOURCE_ALREADY_EXISTS.toException("User already exists");
+
         } catch (Exception e) {
+            event.setStatus(RegistrationStatus.FAILED);
+            event.setErrorMessage(e.getMessage());
+            registrationEventRepository.save(event);
+
             log.error("Registration failed for user: {}", request.getUsername(), e);
+
+            // Schedule async cleanup
+            scheduleCompensatingTransaction(request.getUsername());
+
             throw ApiErrorType.INTERNAL_ERROR.toException("Registration failed");
         }
     }
+
+    @Async
+    protected void scheduleCompensatingTransaction(String username) {
+        compensatingTransaction(username);
+    }
+
+    @Retryable(
+            value = Exception.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    protected void compensatingTransaction(String username) {
+        try {
+            AdminDeleteUserRequest deleteRequest = AdminDeleteUserRequest.builder()
+                    .userPoolId(userPoolId)
+                    .username(username)
+                    .build();
+            cognitoClient.adminDeleteUser(deleteRequest);
+            log.info("Successfully executed compensating transaction for user: {}", username);
+
+        } catch (Exception e) {
+            log.error("Failed to execute compensating transaction for user: {}. Manual intervention required",
+                    username, e);
+            notifyOperationsTeam(username, e);
+        }
+    }
+
+    private void addUserToGroup(String userSub, String username, String role) {
+        AdminAddUserToGroupRequest groupRequest = AdminAddUserToGroupRequest.builder()
+                .userPoolId(userPoolId)
+                .username(username)
+                .groupName(role)
+                .build();
+
+        cognitoClient.adminAddUserToGroup(groupRequest);
+    }
+
+    private void notifyOperationsTeam(String username, Exception e) {
+        // Implement notification logic (e.g., email, Slack, etc.)
+        log.error("Registration cleanup failed for user: {}. Manual cleanup required.", username, e);
+        // Add actual notification implementation
+    }
+
 
     @Override
     public void activateUser(String username, String confirmationCode) {
@@ -313,35 +399,6 @@ public class CognitoUserManagementService implements UserManagementService {
                         .value(request.getUsername())
                         .build()
         );
-    }
-
-    private void addUserToGroup(String userSub, String username, String role) {
-        AdminAddUserToGroupRequest groupRequest = AdminAddUserToGroupRequest.builder()
-                .userPoolId(userPoolId)
-                .username(username)
-                .groupName(role)
-                .build();
-
-        try {
-            cognitoClient.adminAddUserToGroup(groupRequest);
-        } catch (Exception e) {
-            log.error("Failed to add user to group: {}", username);
-            rollbackUserRegistration(username);
-            throw e;
-        }
-    }
-
-    private void rollbackUserRegistration(String username) {
-        try {
-            AdminDeleteUserRequest deleteRequest = AdminDeleteUserRequest.builder()
-                    .userPoolId(userPoolId)
-                    .username(username)
-                    .build();
-            cognitoClient.adminDeleteUser(deleteRequest);
-            log.info("Rolled back user registration for: {}", username);
-        } catch (Exception e) {
-            log.error("Failed to rollback user registration: {}", username, e);
-        }
     }
 
     private void validatePaginationParams(int page, int size) {
