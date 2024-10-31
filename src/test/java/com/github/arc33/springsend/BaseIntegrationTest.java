@@ -2,7 +2,11 @@ package com.github.arc33.springsend;
 
 import com.github.arc33.springsend.config.SecurityConfig;
 import com.github.arc33.springsend.filter.JwtTokenFilter;
+import com.github.arc33.springsend.repository.file.EtcdFileStorage;
+import com.github.arc33.springsend.repository.file.FileStorageRepository;
 import com.github.arc33.springsend.service.blacklist.TokenBlacklistService;
+import io.etcd.jetcd.Client;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -36,6 +40,19 @@ public abstract class BaseIntegrationTest {
 
     @TestConfiguration
     public static class CommonTestConfig {
+        @Bean(destroyMethod = "close")
+        public Client etcdClient(
+                @Value("${etcd.endpoints}") String endpoints) {
+            return Client.builder()
+                    .endpoints(endpoints)
+                    .build();
+        }
+
+        @Bean
+        public FileStorageRepository fileStorageRepository(Client etcdClient) {
+            return new EtcdFileStorage(etcdClient);
+        }
+
         @Bean
         public TokenBlacklistService tokenBlacklistService() {
             return mock(TokenBlacklistService.class);
