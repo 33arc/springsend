@@ -4,6 +4,7 @@ import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.kv.GetResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -13,13 +14,10 @@ import java.util.concurrent.ExecutionException;
 
 @Repository
 @Profile("test")
+@RequiredArgsConstructor
 public class EtcdFileStorage implements FileStorageRepository {
     private final Client etcdClient;
     private static final String PREFIX = "/file/";
-
-    public EtcdFileStorage(Client etcdClient) {
-        this.etcdClient = etcdClient;
-    }
 
     @Override
     public void save(String name, byte[] data) throws IOException {
