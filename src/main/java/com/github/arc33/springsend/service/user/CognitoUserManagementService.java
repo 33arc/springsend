@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,6 +34,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CognitoUserManagementService implements UserManagementService {
     private final CognitoIdentityProviderClient cognitoClient;
+
+    private final CacheManager cacheManager;
 
     @Value("${aws.cognito.userPoolId}")
     private final String userPoolId;
@@ -156,8 +161,9 @@ public class CognitoUserManagementService implements UserManagementService {
         }
     }
 
-//    TODO:
-//    @Cacheable(value = "userRoles", key = "#username", unless = "#result == null")
+    @Cacheable(value = "userRole",
+            key = "#username",
+            unless = "#result == null")
     @Override
     public String getRole(String username) {
         validateUsername(username);
@@ -187,8 +193,7 @@ public class CognitoUserManagementService implements UserManagementService {
         }
     }
 
-//    TODO:
-//    @CacheEvict(value = {"userRoles", "userDetails"}, key = "#username")
+    @CacheEvict(value = {"userRoles", "userDetails"}, key = "#username")
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void deleteUser(String username) {
@@ -201,6 +206,7 @@ public class CognitoUserManagementService implements UserManagementService {
                     .build();
 
             cognitoClient.adminDeleteUser(request);
+            evictCaches(username);
             log.info("Successfully deleted user: {}", username);
 
         } catch (UserNotFoundException e) {
@@ -215,8 +221,9 @@ public class CognitoUserManagementService implements UserManagementService {
         }
     }
 
-//    TODO:
-//    Cacheable(value = "usersList", key = "{#page, #size}")
+@Cacheable(value = "users",
+        key = "'allUsers-' + #pageable.pageNumber + '-' + #pageable.pageSize",
+        unless = "#result == null")
     @Override
     public Page<User> listUsers(int page, int size) {
         validatePaginationParams(page, size);
@@ -251,9 +258,8 @@ public class CognitoUserManagementService implements UserManagementService {
         return builder.build();
     }
 
-//    TODO:
-//    @Cacheable(value = "totalUsers", unless = "#result == 0")
-    private long getCachedTotalUsers() {
+    @Cacheable(value = "totalUsers", unless = "#result == 0")
+    public long getCachedTotalUsers() {
         return getTotalUsers(null);
     }
 
@@ -428,5 +434,10 @@ public class CognitoUserManagementService implements UserManagementService {
                 .orElse("USER"); // Default role if not set
 
         return new CognitoUser(user.username(), email, role, user.userStatus().toString());
+    }
+
+    private void evictCaches(String username) {
+        cacheManager.getCache("users").clear();
+        cacheManager.getCache("userRole").evict(username);
     }
 }
