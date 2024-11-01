@@ -14,12 +14,11 @@ import java.util.stream.Collectors;
 public interface FileMetadataMapper {
 
     @Mapping(target = "assignedUser", source = "assignedUser")
-    @Mapping(target = "publicAllow", expression = "java(!fileMetadata.expires())")
-    @Mapping(target = "categoryIds", expression = "java(mapCategoriesToIds(fileMetadata.categories()))")
+    @Mapping(target = "categoryIds", expression = "java(mapCategoriesToIds(fileMetadata.getCategories()))")
     FileMetadataDto toDto(FileMetadata fileMetadata);
 
     @Mapping(target = "assignedUser", source = "assignedUser")
-    @Mapping(target = "expires", expression = "java(!fileMetadataDto.publicAllow())")
+    @Mapping(target = "expires", expression = "java(!fileMetadataDto.isExpires())")
     @Mapping(target = "fileKey", ignore = true)
     @Mapping(target = "timestamp", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "categories", ignore = true)
