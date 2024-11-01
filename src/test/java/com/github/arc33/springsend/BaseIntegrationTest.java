@@ -2,8 +2,8 @@ package com.github.arc33.springsend;
 
 import com.github.arc33.springsend.config.SecurityConfig;
 import com.github.arc33.springsend.filter.JwtTokenFilter;
-import com.github.arc33.springsend.repository.file.EtcdFileStorage;
-import com.github.arc33.springsend.repository.file.FileStorageRepository;
+import com.github.arc33.springsend.repository.file.storage.EtcdFileStorage;
+import com.github.arc33.springsend.repository.file.storage.FileStorageRepository;
 import com.github.arc33.springsend.service.blacklist.TokenBlacklistService;
 import io.etcd.jetcd.Client;
 import org.springframework.beans.factory.annotation.Value;

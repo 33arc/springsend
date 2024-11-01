@@ -1,13 +1,12 @@
 package com.github.arc33.springsend.service.user;
 
-import com.github.arc33.springsend.domain.event.RegistrationStatus;
-import com.github.arc33.springsend.domain.event.UserRegistrationEvent;
+import com.github.arc33.springsend.domain.event.userregistration.enums.RegistrationStatus;
+import com.github.arc33.springsend.domain.event.userregistration.UserRegistrationEvent;
 import com.github.arc33.springsend.dto.user.UserRegisterRequest;
 import com.github.arc33.springsend.exception.custom.ApiErrorType;
 import com.github.arc33.springsend.model.CognitoUser;
 import com.github.arc33.springsend.model.User;
-import com.github.arc33.springsend.repository.UserRegistrationEventRepository;
-import com.google.protobuf.Api;
+import com.github.arc33.springsend.repository.userregistration.UserRegistrationEventRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;

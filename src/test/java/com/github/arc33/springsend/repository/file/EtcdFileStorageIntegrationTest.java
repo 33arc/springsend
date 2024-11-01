@@ -1,5 +1,6 @@
 package com.github.arc33.springsend.repository.file;
 
+import com.github.arc33.springsend.repository.file.storage.EtcdFileStorage;
 import io.etcd.jetcd.Client;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

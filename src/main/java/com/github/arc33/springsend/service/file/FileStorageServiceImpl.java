@@ -2,7 +2,7 @@ package com.github.arc33.springsend.service.file;
 
 import com.github.arc33.springsend.exception.custom.ApiErrorType;
 import com.github.arc33.springsend.exception.custom.ApiException;
-import com.github.arc33.springsend.repository.file.FileStorageRepository;
+import com.github.arc33.springsend.repository.file.storage.FileStorageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;

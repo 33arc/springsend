@@ -1,7 +1,7 @@
 package com.github.arc33.springsend.service.file;
 
 import com.github.arc33.springsend.exception.custom.ApiException;
-import com.github.arc33.springsend.repository.file.FileStorageRepository;
+import com.github.arc33.springsend.repository.file.storage.FileStorageRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
