@@ -7,35 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 
-@Repository
+@RepositoryRestResource(collectionResourceRel="fileMetadata",path="fileMetadata")
 public interface FileMetadataRepository extends JpaRepository<FileMetadata, Long>,FileMetadataRepositoryCustom {
-    FileMetadata findByFilename(String fileName);
-
-    @Modifying
-    @Query("UPDATE FileMetadata c SET " +
-            "c.filename = :name, " +
-            "c.description = :description, " +
-            "c.assignedUser = :assignedUser, " +
-            "c.uploader = :uploader, " +
-            "c.expiryDate = :expiryDate " +
-            "WHERE c.id = :id")
-    FileMetadata updateFileMetadataById(
-            @Param("id") Long id,
-            @Param("name") String name,
-            @Param("description") String description,
-            @Param("assignedUser") String assignedUser,
-            @Param("uploader") String uploader,
-            @Param("expiryDate") LocalDateTime expiryDate
-    );
-
     boolean existsByIdAndUploader(Long fileId, String username);
-
     Page<FileMetadata> findAllByAssignedUser(String username, Pageable pageable);
-
-    String findFilenameById(Long id);
-
 }

@@ -1,5 +1,6 @@
 package com.github.arc33.springsend.domain.event;
 
+import com.github.arc33.springsend.domain.event.enums.RegistrationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

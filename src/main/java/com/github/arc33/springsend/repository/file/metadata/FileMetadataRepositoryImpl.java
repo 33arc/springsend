@@ -19,7 +19,7 @@ import java.util.List;
 @Repository
 public class FileMetadataRepositoryImpl implements FileMetadataRepositoryCustom {
 
-    @PersistenceContext
+    @PersistenceContext(unitName = "filePersistenceUnit")
     private EntityManager entityManager;
 
     @Autowired
