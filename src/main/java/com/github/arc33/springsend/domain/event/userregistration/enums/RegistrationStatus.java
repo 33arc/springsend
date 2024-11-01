@@ -1,4 +1,4 @@
-package com.github.arc33.springsend.domain.event.enums;
+package com.github.arc33.springsend.domain.event.userregistration.enums;
 
 public enum RegistrationStatus {
     PENDING,

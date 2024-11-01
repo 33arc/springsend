@@ -1,6 +1,6 @@
-package com.github.arc33.springsend.domain.event;
+package com.github.arc33.springsend.domain.event.userregistration;
 
-import com.github.arc33.springsend.domain.event.enums.RegistrationStatus;
+import com.github.arc33.springsend.domain.event.userregistration.enums.RegistrationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
