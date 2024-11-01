@@ -1,4 +1,4 @@
-package com.github.arc33.springsend.repository.file;
+package com.github.arc33.springsend.repository.file.storage;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;

@@ -1,4 +1,4 @@
-package com.github.arc33.springsend.repository.file;
+package com.github.arc33.springsend.repository.file.storage;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package com.github.arc33.springsend.repository.file;
+package com.github.arc33.springsend.repository.file.metadata;
 
 import com.github.arc33.springsend.dto.file.FileMetadataDto;
 import com.github.arc33.springsend.mapper.FileMetadataMapper;
